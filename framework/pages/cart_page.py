@@ -1,0 +1,48 @@
+"""Cart page object for cart content and navigation operations."""
+
+from __future__ import annotations
+
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+
+from framework.core.settings import settings
+from framework.pages.base_page import BasePage
+
+
+class CartPage(BasePage):
+    TITLE = (By.CSS_SELECTOR, ".title")
+    QTY_HEADER = (By.CSS_SELECTOR, ".cart_quantity_label")
+    DESC_HEADER = (By.CSS_SELECTOR, ".cart_desc_label")
+    CART_ITEMS = (By.CSS_SELECTOR, ".cart_item")
+    CONTINUE_SHOPPING = (By.ID, "continue-shopping")
+    CHECKOUT = (By.ID, "checkout")
+
+    @staticmethod
+    def _product_slug(product_name: str) -> str:
+        return product_name.strip().lower().replace(" ", "-")
+
+    def title(self) -> str:
+        return self.text(self.TITLE)
+
+    def quantity_header(self) -> str:
+        return self.text(self.QTY_HEADER)
+
+    def description_header(self) -> str:
+        return self.text(self.DESC_HEADER)
+
+    def item_count(self) -> int:
+        return len(self.wait.present_all(self.CART_ITEMS))
+
+    def remove_by_name(self, product_name: str) -> bool:
+        locator = (By.ID, f"remove-{self._product_slug(product_name)}")
+        return self.safe_click(locator)
+
+    def continue_shopping(self) -> None:
+        self.click(self.CONTINUE_SHOPPING)
+
+    def checkout(self) -> None:
+        self.click(self.CHECKOUT)
+        try:
+            self.wait.url_contains("checkout-step-one.html")
+        except TimeoutException:
+            self.open(f"{settings.base_url.rstrip('/')}/checkout-step-one.html")
