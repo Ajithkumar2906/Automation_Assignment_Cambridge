@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import random
+
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -75,6 +77,35 @@ def verify_sort_options(inventory_page):
     assert expected.issubset(actual)
 
 
+@when(parsers.parse('the user selects sort option "{sort_option}"'))
+def select_sort_option(inventory_page, sort_option):
+    inventory_page.sort_by_value(sort_option)
+
+
+@then("products should be sorted by name ascending")
+def verify_products_sorted_name_asc(inventory_page):
+    actual = inventory_page.product_names()
+    assert actual == sorted(actual), f"Name A-Z sort mismatch. Actual order: {actual}"
+
+
+@then("products should be sorted by name descending")
+def verify_products_sorted_name_desc(inventory_page):
+    actual = inventory_page.product_names()
+    assert actual == sorted(actual, reverse=True), f"Name Z-A sort mismatch. Actual order: {actual}"
+
+
+@then("products should be sorted by price ascending")
+def verify_products_sorted_price_asc(inventory_page):
+    actual = inventory_page.product_prices()
+    assert actual == sorted(actual), f"Price low-high sort mismatch. Actual order: {actual}"
+
+
+@then("products should be sorted by price descending")
+def verify_products_sorted_price_desc(inventory_page):
+    actual = inventory_page.product_prices()
+    assert actual == sorted(actual, reverse=True), f"Price high-low sort mismatch. Actual order: {actual}"
+
+
 @when(parsers.parse('the user adds product "{product_name}" to cart'))
 def add_product(inventory_page, product_name):
     inventory_page.add_product_by_name(product_name)
@@ -84,6 +115,11 @@ def add_product(inventory_page, product_name):
 def remove_product(inventory_page, product_name):
     success = inventory_page.remove_product_by_name(product_name)
     assert success, f"Remove action failed for '{product_name}'"
+
+
+@when("the user clicks reset app state from side menu")
+def reset_app_state_from_side_menu(inventory_page):
+    assert inventory_page.reset_app_state(), "Reset App State did not clear cart state"
 
 
 @then(parsers.parse("cart badge count should be {expected_count:d}"))
@@ -99,6 +135,93 @@ def verify_cart_badge(inventory_page, expected_count):
 def open_product_details(inventory_page, context, product_name):
     context["selected_product"] = product_name
     inventory_page.open_product_details(product_name)
+
+
+@when("the user selects a dynamic product from inventory")
+def select_dynamic_product(inventory_page, context):
+    products = inventory_page.product_cards_data()
+    assert products, "No products available on inventory page"
+    selected = random.choice(products)
+    context["selected_dynamic_product"] = selected
+
+
+@when("the user opens selected dynamic product details")
+def open_selected_dynamic_product_details(inventory_page, context):
+    selected = context["selected_dynamic_product"]
+    inventory_page.open_product_details(selected["name"])
+
+
+@then("selected dynamic product details should match inventory data")
+def verify_dynamic_product_details(product_details_page, context):
+    selected = context["selected_dynamic_product"]
+    assert product_details_page.has_image()
+    assert product_details_page.name() == selected["name"]
+    assert product_details_page.description() == selected["description"]
+    assert float(product_details_page.price().replace("$", "").strip()) == selected["price"]
+
+
+@when("the user adds selected dynamic product to cart")
+def add_selected_dynamic_product(inventory_page, context):
+    selected = context["selected_dynamic_product"]
+    inventory_page.add_product_by_name(selected["name"])
+
+
+@when("the user removes selected dynamic product from inventory")
+def remove_selected_dynamic_product(inventory_page, context):
+    selected = context["selected_dynamic_product"]
+    success = inventory_page.remove_product_by_name(selected["name"])
+    assert success, f"Failed to remove selected dynamic product: {selected['name']}"
+
+
+@then("selected dynamic product should match cart item data")
+def verify_dynamic_product_in_cart(cart_page, context):
+    selected = context["selected_dynamic_product"]
+    items = cart_page.items_data()
+    assert items, "Cart is empty"
+    matched = next((item for item in items if item["name"] == selected["name"]), None)
+    assert matched is not None, f"Selected product not found in cart: {selected['name']}"
+    assert matched["description"] == selected["description"]
+    assert matched["price"] == selected["price"]
+    assert matched["quantity"] >= 1
+
+
+@then("selected dynamic product should match checkout overview item data")
+def verify_dynamic_product_in_overview(checkout_overview_page, context):
+    selected = context["selected_dynamic_product"]
+    items = checkout_overview_page.items_data()
+    assert items, "No items in checkout overview"
+    matched = next((item for item in items if item["name"] == selected["name"]), None)
+    assert matched is not None, f"Selected product not found in checkout overview: {selected['name']}"
+    assert matched["description"] == selected["description"]
+    assert matched["price"] == selected["price"]
+    assert matched["quantity"] >= 1
+
+
+@then("all inventory product images should be loaded")
+def verify_all_inventory_images_loaded(inventory_page):
+    assert inventory_page.all_images_loaded(), "One or more inventory product images failed to load"
+
+
+@when("the user notes the current cart badge count")
+def note_current_cart_badge(inventory_page, context):
+    context["cart_count_before"] = inventory_page.cart_count()
+
+
+@then("the cart badge should increment by 1")
+def verify_badge_increment(inventory_page, context):
+    before = context.get("cart_count_before", 0)
+    expected = before + 1
+    assert inventory_page.wait_for_cart_count(expected), (
+        f"Expected cart badge to increment from {before} to {expected}, got {inventory_page.cart_count()}"
+    )
+
+
+@then("the cart badge should decrement by 1")
+def verify_badge_decrement(inventory_page, context):
+    before = context.get("cart_count_before", 0)
+    assert inventory_page.wait_for_cart_count(before), (
+        f"Expected cart badge to decrement back to {before}, got {inventory_page.cart_count()}"
+    )
 
 
 @then("product details page should display valid information")

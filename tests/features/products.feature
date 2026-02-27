@@ -28,3 +28,54 @@ Feature: Inventory and product operations
     Then cart badge count should be 1
     When the user returns to products page
     Then the products page is displayed
+
+  @regression @ui
+  Scenario: Validate product sorting for all 4 options
+    When the user selects sort option "Name (A to Z)"
+    Then products should be sorted by name ascending
+    When the user selects sort option "Name (Z to A)"
+    Then products should be sorted by name descending
+    When the user selects sort option "Price (low to high)"
+    Then products should be sorted by price ascending
+    When the user selects sort option "Price (high to low)"
+    Then products should be sorted by price descending
+
+  @regression @ui
+  Scenario: Reset app state clears cart badge
+    When the user adds product "Sauce Labs Backpack" to cart
+    Then cart badge count should be 1
+    When the user clicks reset app state from side menu
+    Then cart badge count should be 0
+
+  @regression @ui
+  Scenario: Validate dynamic product details from inventory to details and cart
+    When the user selects a dynamic product from inventory
+    And the user opens selected dynamic product details
+    Then selected dynamic product details should match inventory data
+    When the user toggles cart button on product details page
+    Then cart badge count should be 1
+    When the user opens the cart page
+    Then selected dynamic product should match cart item data
+
+  @regression @ui
+  Scenario: Validate dynamic product consistency in checkout overview
+    When the user selects a dynamic product from inventory
+    And the user adds selected dynamic product to cart
+    And the user opens the cart page
+    And the user starts checkout
+    And the user fills checkout information with valid details
+    And the user continues checkout
+    Then selected dynamic product should match checkout overview item data
+
+  @regression @ui
+  Scenario: Validate all product images are loaded
+    Then all inventory product images should be loaded
+
+  @regression @ui
+  Scenario: Validate cart badge increment and decrement for dynamic product
+    When the user selects a dynamic product from inventory
+    And the user notes the current cart badge count
+    And the user adds selected dynamic product to cart
+    Then the cart badge should increment by 1
+    When the user removes selected dynamic product from inventory
+    Then the cart badge should decrement by 1
