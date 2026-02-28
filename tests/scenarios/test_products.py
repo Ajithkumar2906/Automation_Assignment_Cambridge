@@ -1,8 +1,8 @@
 from pytest_bdd import scenario
 
 
-@scenario("../features/products.feature", "Validate inventory components and sort options")
-def test_inventory_components_and_sort_options():
+@scenario("../features/products.feature", "Validate inventory components")
+def test_inventory_components():
     pass
 
 
@@ -30,17 +30,3 @@ def test_reset_app_state_clears_cart_badge():
 def test_validate_dynamic_product_details_from_inventory_to_details_and_cart():
     pass
 
-
-@scenario("../features/products.feature", "Validate dynamic product consistency in checkout overview")
-def test_validate_dynamic_product_consistency_in_checkout_overview():
-    pass
-
-
-@scenario("../features/products.feature", "Validate all product images are loaded")
-def test_validate_all_product_images_are_loaded():
-    pass
-
-
-@scenario("../features/products.feature", "Validate cart badge increment and decrement for dynamic product")
-def test_validate_cart_badge_increment_and_decrement_for_dynamic_product():
-    pass

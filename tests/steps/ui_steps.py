@@ -3,12 +3,20 @@
 from __future__ import annotations
 
 import random
+import re
 
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from pytest_bdd import given, parsers, then, when
+
+
+def _extract_amount(text: str) -> float:
+    match = re.search(r"([0-9]+(?:\.[0-9]{1,2})?)", text)
+    if not match:
+        raise AssertionError(f"Unable to parse monetary amount from: {text}")
+    return float(match.group(1))
 
 
 @given("the user opens the SauceDemo login page")
@@ -30,6 +38,48 @@ def login_with_credentials(login_page, context, username, password):
     context["last_username"] = username
 
 
+@when("the user logs in with username empty and password \"secret_sauce\"")
+def login_with_empty_username(login_page, context):
+    if login_page.has_error():
+        login_page.close_error()
+    login_page.driver.execute_script(
+        """
+        const set = (id, value) => {
+          const el = document.getElementById(id);
+          const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+          setter.call(el, value);
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+        set('user-name', '');
+        set('password', 'secret_sauce');
+        """
+    )
+    login_page.click(login_page.LOGIN_BTN)
+    context["last_username"] = ""
+
+
+@when("the user logs in with username \"standard_user\" and password empty")
+def login_with_empty_password(login_page, context):
+    if login_page.has_error():
+        login_page.close_error()
+    login_page.driver.execute_script(
+        """
+        const set = (id, value) => {
+          const el = document.getElementById(id);
+          const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+          setter.call(el, value);
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+        set('user-name', 'standard_user');
+        set('password', '');
+        """
+    )
+    login_page.click(login_page.LOGIN_BTN)
+    context["last_username"] = "standard_user"
+
+
 @when("the user clicks login without entering credentials")
 def click_login_without_credentials(login_page):
     login_page.login_blank()
@@ -37,6 +87,11 @@ def click_login_without_credentials(login_page):
 
 @then("the products page is displayed")
 def verify_products_page(inventory_page):
+    assert inventory_page.products_title() == "Products"
+
+
+@then("products page should be displayed")
+def verify_products_page_alt(inventory_page):
     assert inventory_page.products_title() == "Products"
 
 
@@ -80,6 +135,14 @@ def verify_sort_options(inventory_page):
 @when(parsers.parse('the user selects sort option "{sort_option}"'))
 def select_sort_option(inventory_page, sort_option):
     inventory_page.sort_by_value(sort_option)
+
+
+@when("the user notes first and last products from current inventory view")
+def note_inventory_first_last(inventory_page, context):
+    products = inventory_page.product_cards_data()
+    assert products, "No products on inventory page"
+    context["ui_inventory_first"] = {"name": products[0]["name"], "price": float(products[0]["price"])}
+    context["ui_inventory_last"] = {"name": products[-1]["name"], "price": float(products[-1]["price"])}
 
 
 @then("products should be sorted by name ascending")
@@ -145,6 +208,15 @@ def select_dynamic_product(inventory_page, context):
     context["selected_dynamic_product"] = selected
 
 
+@when("the user selects two distinct dynamic products from inventory")
+def select_two_dynamic_products(inventory_page, context):
+    products = inventory_page.product_cards_data()
+    assert len(products) >= 2, "At least two products are required for this scenario"
+    selected_two = random.sample(products, 2)
+    context["selected_dynamic_products"] = selected_two
+
+
+@then("the user opens selected dynamic product details")
 @when("the user opens selected dynamic product details")
 def open_selected_dynamic_product_details(inventory_page, context):
     selected = context["selected_dynamic_product"]
@@ -160,10 +232,26 @@ def verify_dynamic_product_details(product_details_page, context):
     assert float(product_details_page.price().replace("$", "").strip()) == selected["price"]
 
 
+@then("the user adds selected dynamic product to cart")
 @when("the user adds selected dynamic product to cart")
-def add_selected_dynamic_product(inventory_page, context):
+def add_selected_dynamic_product(inventory_page, product_details_page, context):
     selected = context["selected_dynamic_product"]
-    inventory_page.add_product_by_name(selected["name"])
+    if "inventory-item.html" in inventory_page.current_url():
+        product_details_page.toggle_cart_button()
+    else:
+        inventory_page.add_product_by_name(selected["name"])
+
+
+@when("the user adds the first selected dynamic product to cart")
+def add_first_selected_dynamic_product(inventory_page, context):
+    selected_two = context["selected_dynamic_products"]
+    inventory_page.add_product_by_name(selected_two[0]["name"])
+
+
+@when("the user adds the second selected dynamic product to cart")
+def add_second_selected_dynamic_product(inventory_page, context):
+    selected_two = context["selected_dynamic_products"]
+    inventory_page.add_product_by_name(selected_two[1]["name"])
 
 
 @when("the user removes selected dynamic product from inventory")
@@ -183,6 +271,15 @@ def verify_dynamic_product_in_cart(cart_page, context):
     assert matched["description"] == selected["description"]
     assert matched["price"] == selected["price"]
     assert matched["quantity"] >= 1
+
+
+@then("both selected dynamic products should be present in cart")
+def verify_two_dynamic_products_in_cart(cart_page, context):
+    selected_two = context["selected_dynamic_products"]
+    items = cart_page.items_data()
+    cart_names = {item["name"] for item in items}
+    for selected in selected_two:
+        assert selected["name"] in cart_names, f"Selected product not found in cart: {selected['name']}"
 
 
 @then("selected dynamic product should match checkout overview item data")
@@ -234,7 +331,9 @@ def verify_product_details(product_details_page, context):
 
 @when("the user toggles cart button on product details page")
 def toggle_details_button(product_details_page):
-    product_details_page.toggle_cart_button()
+    # Keep this step idempotent for scenarios that expect an added state.
+    if "add to cart" in product_details_page.cart_button_label().lower():
+        product_details_page.toggle_cart_button()
 
 
 @when("the user returns to products page")
@@ -263,8 +362,17 @@ def verify_cart_item_count(cart_page, expected_items):
     assert cart_page.item_count() == expected_items
 
 
+@then("cart page should be displayed")
+def verify_cart_page_displayed(cart_page):
+    assert cart_page.title() == "Your Cart"
+
+
 @when("the user starts checkout")
-def start_checkout(cart_page):
+@then("the user starts checkout")
+def start_checkout(cart_page, inventory_page):
+    # Scenario may start from inventory; ensure cart is opened before checkout.
+    if "cart.html" not in cart_page.current_url():
+        inventory_page.open_cart()
     cart_page.checkout()
 
 
@@ -278,12 +386,128 @@ def continue_without_info(checkout_info_page):
     checkout_info_page.click_continue()
 
 
+@when("the user continues checkout without entering first name")
+def continue_without_first_name(checkout_info_page):
+    if checkout_info_page.has_error():
+        checkout_info_page.close_error()
+        WebDriverWait(checkout_info_page.driver, 3).until(
+            EC.invisibility_of_element_located(checkout_info_page.ERROR_MSG)
+        )
+    first_input = checkout_info_page.wait.visible(checkout_info_page.FIRST_NAME)
+    last_input = checkout_info_page.wait.visible(checkout_info_page.LAST_NAME)
+    postal_input = checkout_info_page.wait.visible(checkout_info_page.POSTAL_CODE)
+    first_input.clear()
+    last_input.clear()
+    postal_input.clear()
+    last_input.send_keys("Tester")
+    postal_input.send_keys("CB11AA")
+    checkout_info_page.driver.execute_script(
+        """
+        const set = (id, value) => {
+          const el = document.getElementById(id);
+          const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+          setter.call(el, value);
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+        set('first-name', '');
+        set('last-name', 'Tester');
+        set('postal-code', 'CB11AA');
+        """
+    )
+    assert first_input.get_attribute("value").strip() == ""
+    assert last_input.get_attribute("value").strip() == "Tester"
+    assert postal_input.get_attribute("value").strip() == "CB11AA"
+    checkout_info_page.click_continue()
+
+
+@when("the user fills first name and continues checkout without entering last name")
+def continue_without_last_name(checkout_info_page):
+    if checkout_info_page.has_error():
+        checkout_info_page.close_error()
+        WebDriverWait(checkout_info_page.driver, 3).until(
+            EC.invisibility_of_element_located(checkout_info_page.ERROR_MSG)
+        )
+    first_input = checkout_info_page.wait.visible(checkout_info_page.FIRST_NAME)
+    last_input = checkout_info_page.wait.visible(checkout_info_page.LAST_NAME)
+    postal_input = checkout_info_page.wait.visible(checkout_info_page.POSTAL_CODE)
+    first_input.clear()
+    last_input.clear()
+    postal_input.clear()
+    first_input.send_keys("Alex")
+    postal_input.send_keys("CB11AA")
+    checkout_info_page.driver.execute_script(
+        """
+        const set = (id, value) => {
+          const el = document.getElementById(id);
+          const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+          setter.call(el, value);
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+        set('first-name', 'Alex');
+        set('last-name', '');
+        set('postal-code', 'CB11AA');
+        """
+    )
+    assert first_input.get_attribute("value").strip() == "Alex"
+    assert last_input.get_attribute("value").strip() == ""
+    assert postal_input.get_attribute("value").strip() == "CB11AA"
+    checkout_info_page.click_continue()
+
+
+@when("the user fills first name, last name and continues checkout without entering postal code")
+def continue_without_postal_code(checkout_info_page):
+    if checkout_info_page.has_error():
+        checkout_info_page.close_error()
+        WebDriverWait(checkout_info_page.driver, 3).until(
+            EC.invisibility_of_element_located(checkout_info_page.ERROR_MSG)
+        )
+    first_input = checkout_info_page.wait.visible(checkout_info_page.FIRST_NAME)
+    last_input = checkout_info_page.wait.visible(checkout_info_page.LAST_NAME)
+    postal_input = checkout_info_page.wait.visible(checkout_info_page.POSTAL_CODE)
+    first_input.clear()
+    last_input.clear()
+    postal_input.clear()
+    first_input.send_keys("Alex")
+    last_input.send_keys("Tester")
+    checkout_info_page.driver.execute_script(
+        """
+        const set = (id, value) => {
+          const el = document.getElementById(id);
+          const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+          setter.call(el, value);
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+        set('first-name', 'Alex');
+        set('last-name', 'Tester');
+        set('postal-code', '');
+        """
+    )
+    assert first_input.get_attribute("value").strip() == "Alex"
+    assert last_input.get_attribute("value").strip() == "Tester"
+    assert postal_input.get_attribute("value").strip() == ""
+    checkout_info_page.click_continue()
+
+
+@when("the user cancel checkout without continue")
+def cancel_checkout_without_continue(checkout_info_page):
+    checkout_info_page.click_cancel()
+
+
+@when("the user click continue shopping from cart page")
+def click_continue_shopping_from_cart(cart_page):
+    cart_page.continue_shopping()
+
+
 @then(parsers.parse('checkout info error should contain "{expected_error}"'))
 def verify_checkout_error(checkout_info_page, expected_error):
     assert expected_error.lower() in checkout_info_page.error_text().lower()
 
 
 @when("the user fills checkout information with valid details")
+@then("the user fills checkout information with valid details")
 def fill_checkout_info(checkout_info_page, checkout_data):
     data = checkout_data["default"]
     checkout_info_page.wait.url_contains("checkout-step-one.html")
@@ -291,6 +515,7 @@ def fill_checkout_info(checkout_info_page, checkout_data):
 
 
 @when("the user continues checkout")
+@then("the user continues checkout")
 def continue_checkout(checkout_info_page):
     for _ in range(3):
         checkout_info_page.click_continue()
@@ -302,6 +527,13 @@ def continue_checkout(checkout_info_page):
     checkout_info_page.open(f"{checkout_info_page.current_url().split('checkout-step-one.html')[0]}checkout-step-two.html")
     if "checkout-step-two.html" not in checkout_info_page.current_url():
         raise AssertionError("Failed to navigate to checkout overview after continue action")
+
+
+@when("the user records checkout overview total amount")
+@then("the user records checkout overview total amount")
+def record_checkout_overview_total(checkout_overview_page, context):
+    checkout_overview_page.wait.url_contains("checkout-step-two.html")
+    context["ui_checkout_total"] = round(_extract_amount(checkout_overview_page.total()), 2)
 
 
 @then(parsers.parse('checkout overview title should be "{expected_title}"'))
@@ -321,7 +553,25 @@ def verify_checkout_overview_fields(checkout_overview_page):
     assert "Total" in checkout_overview_page.total()
 
 
+@then("checkout overview financial totals should be correct")
+def verify_checkout_overview_totals(checkout_overview_page):
+    checkout_overview_page.wait.url_contains("checkout-step-two.html")
+    items = checkout_overview_page.items_data()
+    assert items, "Expected at least one item in checkout overview"
+
+    sum_prices = round(sum(item["price"] for item in items), 2)
+    item_total = round(_extract_amount(checkout_overview_page.item_total()), 2)
+    tax = round(_extract_amount(checkout_overview_page.tax()), 2)
+    total = round(_extract_amount(checkout_overview_page.total()), 2)
+
+    assert item_total == sum_prices, f"Item total mismatch. expected={sum_prices} actual={item_total}"
+    assert total == round(item_total + tax, 2), (
+        f"Total mismatch. expected={round(item_total + tax, 2)} actual={total}"
+    )
+
+
 @when("the user finishes checkout")
+@then("the user finishes checkout")
 def finish_checkout(checkout_overview_page):
     checkout_overview_page.finish()
 

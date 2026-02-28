@@ -48,10 +48,27 @@ cp .env.example .env
 ## Run Tests
 
 ```bash
-pytest -m smoke
-pytest -m regression
-pytest -n 2
+pytest -m smoke --browser chrome
+pytest -m regression --browser firefox
+pytest -m "ui and not api" --browser edge
+pytest -m e2e --browser chrome
 ```
+
+Run multiple browsers in one command:
+
+```bash
+pytest -m ui --browser chrome --browser firefox
+```
+
+Parallel execution (xdist):
+
+```bash
+pytest -m ui -n auto --dist loadscope --browser chrome
+```
+
+Safari notes (macOS only):
+- Enable `Allow Remote Automation` in Safari Develop menu.
+- Headless is not supported for Safari.
 
 ## Run With Selenium Grid
 
@@ -66,6 +83,16 @@ docker compose up -d
 ```env
 REMOTE=true
 SELENIUM_GRID_URL=http://localhost:4444/wd/hub
+```
+
+For hybrid API checks:
+
+```env
+API_ENABLED=true
+API_BASE_URL=https://<your-backend-host>
+API_INVENTORY_ENDPOINT=/api/inventory
+API_CART_ENDPOINT=/api/cart
+API_LATEST_ORDER_ENDPOINT=/api/orders/latest
 ```
 
 3. Execute tests:
@@ -100,6 +127,5 @@ allure serve reports/allure-results
 - Add/Remove cart flows.
 - Cart page and checkout info validations.
 - Checkout overview and finish flow.
-- User-specific behavior checks (`standard_user`, `locked_out_user`, `problem_user`, `performance_glitch_user`, `error_user`, `visual_user`).
-- Lightweight API health validation.
-
+- Dynamic product flows (inventory -> details -> cart -> checkout overview).
+- Hybrid UI + API validation for sorting, cart state, and post-checkout order checks.

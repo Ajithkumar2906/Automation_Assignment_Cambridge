@@ -1,0 +1,117 @@
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     LoginPage:base_page.py:27 Clicking element: ('css selector', 'button.error-button')
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     LoginPage:base_page.py:27 Clicking element: ('css selector', 'button.error-button')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     LoginPage:base_page.py:27 Clicking element: ('css selector', 'button.error-button')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     LoginPage:base_page.py:27 Clicking element: ('css selector', 'button.error-button')
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('id', 'add-to-cart-sauce-labs-bolt-t-shirt')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('id', 'remove-sauce-labs-bolt-t-shirt')
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('xpath', "//div[text()='Sauce Labs Backpack']")
+INFO     ProductDetailsPage:base_page.py:27 Clicking element: ('css selector', '.btn_inventory')
+INFO     ProductDetailsPage:base_page.py:27 Clicking element: ('id', 'back-to-products')
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('id', 'add-to-cart-test.allthethings()-t-shirt-(red)')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('id', 'react-burger-menu-btn')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('id', 'reset_sidebar_link')
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('id', 'add-to-cart-sauce-labs-fleece-jacket')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('id', 'remove-sauce-labs-fleece-jacket')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('xpath', "//div[text()='Sauce Labs Fleece Jacket']")
+INFO     ProductDetailsPage:base_page.py:27 Clicking element: ('css selector', '.btn_inventory')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('css selector', '.shopping_cart_link')
+INFO     CartPage:base_page.py:27 Clicking element: ('id', 'checkout')
+INFO     CheckoutInfoPage:base_page.py:35 Typing into element: ('id', 'first-name')
+INFO     CheckoutInfoPage:base_page.py:35 Typing into element: ('id', 'last-name')
+INFO     CheckoutInfoPage:base_page.py:35 Typing into element: ('id', 'postal-code')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('id', 'continue')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('id', 'continue')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('id', 'continue')
+INFO     CheckoutInfoPage:base_page.py:22 Opening URL: https://www.saucedemo.com/checkout-step-two.html
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('css selector', '.shopping_cart_link')
+INFO     CartPage:base_page.py:27 Clicking element: ('id', 'checkout')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('id', 'continue')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('css selector', 'button.error-button')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('id', 'continue')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('css selector', 'button.error-button')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('id', 'continue')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('id', 'cancel')
+INFO     CartPage:base_page.py:27 Clicking element: ('id', 'continue-shopping')
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('id', 'add-to-cart-sauce-labs-fleece-jacket')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('id', 'add-to-cart-test.allthethings()-t-shirt-(red)')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('css selector', '.shopping_cart_link')
+INFO     CartPage:base_page.py:27 Clicking element: ('id', 'checkout')
+INFO     CheckoutInfoPage:base_page.py:35 Typing into element: ('id', 'first-name')
+INFO     CheckoutInfoPage:base_page.py:35 Typing into element: ('id', 'last-name')
+INFO     CheckoutInfoPage:base_page.py:35 Typing into element: ('id', 'postal-code')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('id', 'continue')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('id', 'continue')
+INFO     CheckoutInfoPage:base_page.py:27 Clicking element: ('id', 'continue')
+INFO     CheckoutInfoPage:base_page.py:22 Opening URL: https://www.saucedemo.com/checkout-step-two.html
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('id', 'add-to-cart-sauce-labs-onesie')
+INFO     InventoryPage:base_page.py:27 Clicking element: ('css selector', '.shopping_cart_link')
+INFO     framework.core.driver_factory:driver_factory.py:26 Creating driver. browser=chrome remote=False
+INFO     LoginPage:base_page.py:22 Opening URL: https://www.saucedemo.com/
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'user-name')
+INFO     LoginPage:base_page.py:35 Typing into element: ('id', 'password')
+INFO     LoginPage:base_page.py:27 Clicking element: ('id', 'login-button')

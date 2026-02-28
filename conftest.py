@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 from pathlib import Path
 
@@ -23,6 +24,46 @@ from framework.pages.product_details_page import ProductDetailsPage
 pytest_plugins = ["tests.steps.ui_steps", "tests.steps.api_steps"]
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--browser",
+        action="append",
+        dest="browsers",
+        default=[],
+        help="Browser(s) to run: chrome, firefox, edge, safari. Can be passed multiple times.",
+    )
+
+
+def _normalized_browsers(config) -> list[str]:
+    cli_values = config.getoption("browsers") or []
+    raw = cli_values if cli_values else [settings.browser]
+    browsers: list[str] = []
+    for value in raw:
+        for part in str(value).split(","):
+            browser = part.strip().lower()
+            if browser:
+                browsers.append(browser)
+    return browsers or ["chrome"]
+
+
+def pytest_generate_tests(metafunc):
+    ui_driver_fixtures = {
+        "browser_name",
+        "driver",
+        "login_page",
+        "inventory_page",
+        "product_details_page",
+        "cart_page",
+        "checkout_info_page",
+        "checkout_overview_page",
+        "checkout_complete_page",
+    }
+    if not (set(metafunc.fixturenames) & ui_driver_fixtures):
+        return
+    browsers = _normalized_browsers(metafunc.config)
+    metafunc.parametrize("browser_name", browsers)
+
+
 @pytest.fixture(scope="session")
 def users_data() -> dict[str, str]:
     return json.loads(Path("framework/data/users.json").read_text(encoding="utf-8"))
@@ -34,11 +75,19 @@ def checkout_data() -> dict:
 
 
 @pytest.fixture(scope="function")
-def driver() -> WebDriver:
-    browser = DriverFactory.create_driver()
+def driver(browser_name: str) -> WebDriver:
+    try:
+        browser = DriverFactory.create_driver(browser_name)
+    except Exception as exc:
+        pytest.skip(f"Browser '{browser_name}' is unavailable in current environment: {exc}")
     browser.implicitly_wait(settings.implicit_wait)
     yield browser
     browser.quit()
+
+
+@pytest.fixture(scope="function")
+def browser_name(request) -> str:
+    return _normalized_browsers(request.config)[0]
 
 
 @pytest.fixture(scope="function")
@@ -107,6 +156,29 @@ def pytest_runtest_makereport(item: Item, call):
     setattr(item, f"rep_{report.when}", report)
 
 
+def pytest_collection_modifyitems(items: list[Item]) -> None:
+    """Force execution order for UI interview flow."""
+    # In xdist runs, keep natural scheduling for better parallel balancing.
+    if items and items[0].config.getoption("numprocesses", default=0):
+        return
+
+    file_order = {
+        "test_login.py": 1,
+        "test_products.py": 2,
+        "test_cart_checkout.py": 3,
+        "test_e2e.py": 4,
+        "test_api.py": 5,
+    }
+
+    def order_key(item: Item) -> tuple[int, int, str]:
+        filename = Path(str(item.fspath)).name
+        rank = file_order.get(filename, 99)
+        line = item.location[1] if item.location else 0
+        return rank, line, item.name
+
+    items.sort(key=order_key)
+
+
 @pytest.fixture(autouse=True)
 def _capture_screenshot_on_failure(request):
     """Capture screenshots for failed UI tests to help interview debugging discussion."""
@@ -117,5 +189,8 @@ def _capture_screenshot_on_failure(request):
             return
         reports_dir = Path("reports") / "screenshots"
         reports_dir.mkdir(parents=True, exist_ok=True)
-        screenshot_path = reports_dir / f"{request.node.name}.png"
+        worker_id = request.config.workerinput.get("workerid", "main") if hasattr(request.config, "workerinput") else "main"
+        browser = request.node.funcargs.get("browser_name", "browser")
+        safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", request.node.nodeid)
+        screenshot_path = reports_dir / f"{worker_id}_{browser}_{safe_name}.png"
         driver.save_screenshot(str(screenshot_path))

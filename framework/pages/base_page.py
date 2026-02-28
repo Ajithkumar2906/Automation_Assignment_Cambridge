@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import time
 
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import (
+    ElementClickInterceptedException,
+    StaleElementReferenceException,
+    TimeoutException,
+    WebDriverException,
+)
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from framework.core.logger import get_logger
@@ -25,18 +30,36 @@ class BasePage:
 
     def click(self, locator: tuple[str, str]) -> None:
         self.logger.info("Clicking element: %s", locator)
-        element = self.wait.clickable(locator)
-        # SauceDemo can intermittently ignore native Selenium click events.
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
-        self.driver.execute_script("arguments[0].click();", element)
-        self._action_delay()
+        last_error: Exception | None = None
+        for attempt in range(3):
+            try:
+                element = self.wait.clickable(locator)
+                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+                # SauceDemo can intermittently ignore native Selenium click events.
+                self.driver.execute_script("arguments[0].click();", element)
+                self._action_delay()
+                return
+            except (TimeoutException, StaleElementReferenceException, ElementClickInterceptedException) as exc:
+                last_error = exc
+                self.logger.warning("Click attempt %s failed for %s: %s", attempt + 1, locator, exc)
+                time.sleep(0.2)
+        raise WebDriverException(f"Failed to click {locator} after retries: {last_error}")
 
     def type(self, locator: tuple[str, str], value: str) -> None:
         self.logger.info("Typing into element: %s", locator)
-        element = self.wait.visible(locator)
-        element.clear()
-        element.send_keys(value)
-        self._action_delay()
+        last_error: Exception | None = None
+        for attempt in range(3):
+            try:
+                element = self.wait.visible(locator)
+                element.clear()
+                element.send_keys(value)
+                self._action_delay()
+                return
+            except (TimeoutException, StaleElementReferenceException) as exc:
+                last_error = exc
+                self.logger.warning("Type attempt %s failed for %s: %s", attempt + 1, locator, exc)
+                time.sleep(0.2)
+        raise WebDriverException(f"Failed to type into {locator} after retries: {last_error}")
 
     def text(self, locator: tuple[str, str]) -> str:
         return self.wait.visible(locator).text.strip()

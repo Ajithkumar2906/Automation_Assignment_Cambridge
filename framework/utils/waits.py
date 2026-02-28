@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
@@ -21,6 +21,9 @@ class WaitUtils:
     def clickable(self, locator: tuple[str, str]) -> WebElement:
         return WebDriverWait(self.driver, self.timeout).until(EC.element_to_be_clickable(locator))
 
+    def present(self, locator: tuple[str, str]) -> WebElement:
+        return WebDriverWait(self.driver, self.timeout).until(EC.presence_of_element_located(locator))
+
     def present_all(self, locator: tuple[str, str]) -> list[WebElement]:
         return WebDriverWait(self.driver, self.timeout).until(EC.presence_of_all_elements_located(locator))
 
@@ -33,5 +36,5 @@ class WaitUtils:
     def try_visible(self, locator: tuple[str, str]) -> WebElement | None:
         try:
             return self.visible(locator)
-        except TimeoutException:
+        except (TimeoutException, WebDriverException):
             return None

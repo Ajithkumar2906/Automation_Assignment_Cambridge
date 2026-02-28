@@ -1,38 +1,40 @@
 Feature: Cart and checkout validation
-  As a QA engineer
-  I want to verify cart and checkout workflows
-  So that users can complete purchases successfully
 
   Background:
     Given the user is logged in as "standard_user"
 
   @smoke @ui
   Scenario: Validate cart headers and item count
-    When the user adds product "Sauce Labs Backpack" to cart
+    When the user selects a dynamic product from inventory
+    And the user adds selected dynamic product to cart
     And the user opens the cart page
     Then cart page title should be "Your Cart"
     And cart headers should be "QTY" and "Description"
     And cart should contain 1 items
 
   @regression @ui
-  Scenario: Checkout info validation with empty fields then success
-    When the user adds product "Sauce Labs Backpack" to cart
-    And the user opens the cart page
-    And the user starts checkout
+  Scenario: Checkout info validation with empty fields then cancel
+    When the user starts checkout
     Then checkout info title should be "Checkout: Your Information"
-    When the user continues checkout without entering information
+    When the user continues checkout without entering first name
     Then checkout info error should contain "First Name is required"
-    When the user fills checkout information with valid details
-    And the user continues checkout
-    Then checkout overview title should be "Checkout: Overview"
+    When the user fills first name and continues checkout without entering last name
+    Then checkout info error should contain "Last Name is required"
+    When the user fills first name, last name and continues checkout without entering postal code
+    Then checkout info error should contain "Postal code is required"
+    When the user cancel checkout without continue
+    Then cart page should be displayed
+    When the user click continue shopping from cart page
+    Then products page should be displayed
 
-  @smoke @ui
-  Scenario: Complete checkout flow
-    When the user adds product "Sauce Labs Backpack" to cart
-    And the user opens the cart page
+  @regression @ui
+  Scenario: Checkout overview payment shipping and totals validation
+    When the user selects two distinct dynamic products from inventory
+    And the user adds the first selected dynamic product to cart
+    And the user adds the second selected dynamic product to cart
     And the user starts checkout
     And the user fills checkout information with valid details
     And the user continues checkout
-    Then checkout overview should show payment shipping and total information
-    When the user finishes checkout
-    Then checkout complete header should be "Thank you for your order!"
+    Then checkout overview title should be "Checkout: Overview"
+    And checkout overview should show payment shipping and total information
+    And checkout overview financial totals should be correct

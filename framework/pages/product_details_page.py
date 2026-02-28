@@ -30,5 +30,8 @@ class ProductDetailsPage(BasePage):
     def toggle_cart_button(self) -> None:
         self.click(self.ADD_OR_REMOVE)
 
+    def cart_button_label(self) -> str:
+        return self.text(self.ADD_OR_REMOVE)
+
     def back_to_products(self) -> None:
         self.click(self.BACK)

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
@@ -41,7 +41,17 @@ class InventoryPage(BasePage):
         return self.text(self.PRODUCTS_TITLE)
 
     def open_menu(self) -> None:
-        self.click(self.MENU_BTN)
+        for _ in range(3):
+            try:
+                self.click(self.MENU_BTN)
+                self.wait.visible(self.RESET_LINK)
+                return
+            except WebDriverException:
+                try:
+                    self.driver.switch_to.default_content()
+                except WebDriverException:
+                    pass
+        raise AssertionError("Failed to open side menu")
 
     def close_menu(self) -> None:
         self.click(self.MENU_CLOSE)
@@ -55,26 +65,57 @@ class InventoryPage(BasePage):
         self.click(self.ABOUT_LINK)
 
     def reset_app_state(self) -> bool:
-        for _ in range(3):
-            self.open_menu()
-            self.click(self.RESET_LINK)
-            self.driver.refresh()
+        for _ in range(4):
+            try:
+                self.open_menu()
+                self.click(self.RESET_LINK)
+            except WebDriverException:
+                # Safari can occasionally lose frame context around burger menu actions.
+                self._clear_visible_cart_items()
+            # Safari can be sensitive right after menu actions; let state settle.
+            self.wait.try_visible(self.MENU_BTN)
             if self.wait_for_cart_count(0):
                 return True
+            self._clear_visible_cart_items()
+            if self.wait_for_cart_count(0):
+                return True
+            self.driver.refresh()
         return False
 
+    def _clear_visible_cart_items(self) -> None:
+        try:
+            remove_buttons = self.driver.find_elements(*self.REMOVE_BUTTONS)
+        except WebDriverException:
+            return
+        for button in remove_buttons:
+            try:
+                self.driver.execute_script("arguments[0].click();", button)
+            except WebDriverException:
+                continue
+
     def cart_count(self) -> int:
-        badge = self.wait.try_visible(self.CART_BADGE)
-        if badge:
-            return int(badge.text.strip())
+        try:
+            badges = self.driver.find_elements(*self.CART_BADGE)
+            if badges and badges[0].is_displayed():
+                text = badges[0].text.strip()
+                if text.isdigit():
+                    return int(text)
+        except WebDriverException:
+            pass
+
         # Fallback for occasional badge rendering issues in AUT.
-        return len(self.driver.find_elements(*self.REMOVE_BUTTONS))
+        try:
+            return len(self.driver.find_elements(*self.REMOVE_BUTTONS))
+        except WebDriverException:
+            return 0
 
     def wait_for_cart_count(self, expected_count: int) -> bool:
         try:
-            WebDriverWait(self.driver, settings.explicit_wait).until(lambda _: self.cart_count() == expected_count)
+            WebDriverWait(self.driver, settings.explicit_wait).until(
+                lambda _: self.cart_count() == expected_count
+            )
             return True
-        except TimeoutException:
+        except (TimeoutException, WebDriverException):
             return False
 
     def open_cart(self) -> None:
@@ -156,15 +197,20 @@ class InventoryPage(BasePage):
         add_locator = (By.ID, f"add-to-cart-{self._product_slug(product_name)}")
         remove_locator = (By.ID, f"remove-{self._product_slug(product_name)}")
 
-        if self.driver.find_elements(*remove_locator):
-            return
+        try:
+            if self.driver.find_elements(*remove_locator):
+                return
+        except WebDriverException:
+            pass
 
         for _ in range(3):
-            self.click(add_locator)
+            clicked = self.safe_click(add_locator)
+            if not clicked:
+                continue
             try:
-                WebDriverWait(self.driver, 3).until(EC.presence_of_element_located(remove_locator))
+                WebDriverWait(self.driver, 5).until(EC.presence_of_element_located(remove_locator))
                 return
-            except TimeoutException:
+            except (TimeoutException, WebDriverException):
                 continue
 
         raise AssertionError(f"Failed to add product '{product_name}' after retries")
@@ -174,5 +220,9 @@ class InventoryPage(BasePage):
         return self.safe_click(locator)
 
     def open_product_details(self, product_name: str) -> None:
-        locator = (By.XPATH, f"//div[text()='{product_name}']")
+        # Click the product name within the inventory list (stable to layout shifts).
+        locator = (
+            By.XPATH,
+            f"//div[contains(@class,'inventory_item_name') and normalize-space(text())='{product_name}']",
+        )
         self.click(locator)
