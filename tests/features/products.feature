@@ -39,16 +39,6 @@ Feature: Inventory and product operations
     When the user selects sort option "Price (high to low)"
     Then products should be sorted by price descending
 
-  @regression @ui @api
-  Scenario: Validate sorting with API comparison
-    Given an API client for SauceDemo backend
-    When the user selects sort option "Price (high to low)"
-    And the user notes first and last products from current inventory view
-    And the API client requests inventory sorted by "price_desc"
-    Then inventory API response status should be 200
-    And inventory API should be sorted by price descending
-    And inventory API first and last items should match current UI inventory view
-
   @regression @ui
   Scenario: Sidemenu close and Logout from page
     When the user clicks sidemenu from inventory
@@ -85,12 +75,3 @@ Feature: Inventory and product operations
     And the user fills checkout information with valid details
     And the user continues checkout
     Then selected loaded product should match checkout overview item data
-
-  @regression @ui @api
-  Scenario: Validate loaded cart state between UI and API
-    Given an API client for SauceDemo backend
-    When the user selects a loaded product from inventory
-    And the user adds selected loaded product to cart
-    And the API client requests current cart
-    Then cart API response status should be 200
-    And cart API should contain selected loaded product

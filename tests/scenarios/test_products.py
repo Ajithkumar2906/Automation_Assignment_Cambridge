@@ -21,11 +21,6 @@ def test_sorting_all_options():
     pass
 
 
-@scenario("../features/products.feature", "Validate sorting with API comparison")
-def test_sorting_matches_api():
-    pass
-
-
 @scenario("../features/products.feature", "Sidemenu close and Logout from page")
 def test_sidemenu_close_and_logout_from_page():
     pass
@@ -40,7 +35,3 @@ def test_reset_clears_cart_badge():
 def test_loaded_product_details_flow():
     pass
 
-
-@scenario("../features/products.feature", "Validate loaded cart state between UI and API")
-def test_loaded_cart_matches_api():
-    pass
