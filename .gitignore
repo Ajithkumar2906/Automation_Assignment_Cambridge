@@ -12,3 +12,4 @@ logs/
 .DS_Store
 .idea/
 .vscode/
+tools/edgedriver/
