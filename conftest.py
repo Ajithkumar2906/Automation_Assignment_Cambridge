@@ -141,10 +141,12 @@ def pytest_bdd_apply_tag(tag: str, function):
 
 
 def pytest_bdd_before_step(request, feature, scenario, step, step_func):
+    _ = (request, feature, scenario, step_func)
     print(f"[STEP-START] {step.keyword} {step.name}", flush=True)
 
 
 def pytest_bdd_after_step(request, feature, scenario, step, step_func, step_func_args):
+    _ = (request, feature, scenario, step_func, step_func_args)
     print(f"[STEP-END] {step.keyword} {step.name}", flush=True)
     if settings.step_delay_seconds > 0:
         time.sleep(settings.step_delay_seconds)
@@ -152,6 +154,7 @@ def pytest_bdd_after_step(request, feature, scenario, step, step_func, step_func
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item: Item, call):
+    _ = call
     outcome = yield
     report = outcome.get_result()
     setattr(item, f"rep_{report.when}", report)

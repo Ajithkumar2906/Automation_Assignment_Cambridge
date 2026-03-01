@@ -14,7 +14,6 @@ class LoginPage(BasePage):
     LOGIN_BTN = (By.ID, "login-button")
     ERROR_MSG = (By.CSS_SELECTOR, "h3[data-test='error']")
     ERROR_CLOSE = (By.CSS_SELECTOR, "button.error-button")
-    LOGO = (By.CSS_SELECTOR, ".login_logo")
 
     def load(self) -> None:
         self.open(settings.base_url)
@@ -35,6 +34,3 @@ class LoginPage(BasePage):
 
     def has_error(self) -> bool:
         return self.is_visible(self.ERROR_MSG)
-
-    def logo_text(self) -> str:
-        return self.text(self.LOGO)

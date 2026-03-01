@@ -1,4 +1,4 @@
-"""Inventory page object encapsulating products, sort, and menu operations."""
+"""Inventory page object for product list, menu, and cart actions."""
 
 from __future__ import annotations
 
@@ -20,12 +20,10 @@ class InventoryPage(BasePage):
     PRODUCTS_TITLE = (By.CSS_SELECTOR, ".title")
     FILTER = (By.CSS_SELECTOR, ".product_sort_container")
     SORT_OPTIONS = (By.CSS_SELECTOR, ".product_sort_container option")
-    INVENTORY_ITEMS = (By.CSS_SELECTOR, ".inventory_item")
     INVENTORY_NAMES = (By.CSS_SELECTOR, ".inventory_item_name")
     INVENTORY_DESCRIPTIONS = (By.CSS_SELECTOR, ".inventory_item_desc")
     INVENTORY_PRICES = (By.CSS_SELECTOR, ".inventory_item_price")
     INVENTORY_IMAGES = (By.CSS_SELECTOR, ".inventory_item_img img")
-    ABOUT_LINK = (By.ID, "about_sidebar_link")
     LOGOUT_LINK = (By.ID, "logout_sidebar_link")
     RESET_LINK = (By.ID, "reset_sidebar_link")
     REMOVE_BUTTONS = (By.CSS_SELECTOR, "[id^='remove-']")
@@ -60,19 +58,15 @@ class InventoryPage(BasePage):
         self.open_menu()
         self.click(self.LOGOUT_LINK)
 
-    def click_about(self) -> None:
-        self.open_menu()
-        self.click(self.ABOUT_LINK)
-
     def reset_app_state(self) -> bool:
         for _ in range(4):
             try:
                 self.open_menu()
                 self.click(self.RESET_LINK)
             except WebDriverException:
-                # Safari can occasionally lose frame context around burger menu actions.
+                # Safari occasionally loses focus around menu interactions.
                 self._clear_visible_cart_items()
-            # Safari can be sensitive right after menu actions; let state settle.
+            # Let the UI settle before checking the badge state.
             self.wait.try_visible(self.MENU_BTN)
             if self.wait_for_cart_count(0):
                 return True
@@ -103,7 +97,7 @@ class InventoryPage(BasePage):
         except WebDriverException:
             pass
 
-        # Fallback for occasional badge rendering issues in AUT.
+        # If the badge is flaky, infer count from visible Remove buttons.
         try:
             return len(self.driver.find_elements(*self.REMOVE_BUTTONS))
         except WebDriverException:
@@ -122,11 +116,8 @@ class InventoryPage(BasePage):
         self.click(self.CART_ICON)
         try:
             self.wait.url_contains("cart.html")
-        except TimeoutException:
-            self.open(f"{settings.base_url.rstrip('/')}/cart.html")
-
-    def inventory_count(self) -> int:
-        return len(self.wait.present_all(self.INVENTORY_ITEMS))
+        except TimeoutException as exc:
+            raise AssertionError("Failed to navigate to cart after clicking cart icon") from exc
 
     def sort_by_value(self, value: str) -> None:
         dropdown = self.wait.visible(self.FILTER)
@@ -166,19 +157,6 @@ class InventoryPage(BasePage):
                 }
             )
         return products
-
-    def image_loaded_for_name(self, product_name: str) -> bool:
-        image = self.driver.find_element(
-            By.XPATH,
-            f"//div[@class='inventory_item'][.//div[@class='inventory_item_name' and text()='{product_name}']]"
-            "//img",
-        )
-        return bool(
-            self.driver.execute_script(
-                "return arguments[0].complete && arguments[0].naturalWidth > 0;",
-                image,
-            )
-        )
 
     def all_images_loaded(self) -> bool:
         images = self.wait.present_all(self.INVENTORY_IMAGES)
@@ -220,7 +198,7 @@ class InventoryPage(BasePage):
         return self.safe_click(locator)
 
     def open_product_details(self, product_name: str) -> None:
-        # Click the product name within the inventory list (stable to layout shifts).
+        # Product name text is the most stable click target across browsers.
         locator = (
             By.XPATH,
             f"//div[contains(@class,'inventory_item_name') and normalize-space(text())='{product_name}']",

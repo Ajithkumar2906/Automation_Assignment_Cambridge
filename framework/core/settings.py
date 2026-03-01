@@ -27,11 +27,6 @@ class Settings:
     action_delay_seconds: float = float(
         os.getenv("ACTION_DELAY_SECONDS", "0.35"))
     step_delay_seconds: float = float(os.getenv("STEP_DELAY_SECONDS", "0.8"))
-    api_enabled: bool = os.getenv("API_ENABLED", "false").lower() == "true"
-    api_base_url: str = os.getenv("API_BASE_URL", "https://www.saucedemo.com")
-    api_inventory_endpoint: str = os.getenv(
-        "API_INVENTORY_ENDPOINT", "/api/inventory")
-    api_cart_endpoint: str = os.getenv("API_CART_ENDPOINT", "/api/cart")
     browserstack_enabled: bool = os.getenv("BROWSERSTACK_ENABLED", "false").lower() == "true"
     browserstack_username: str = os.getenv("BROWSERSTACK_USERNAME", "")
     browserstack_access_key: str = os.getenv("BROWSERSTACK_ACCESS_KEY", "")

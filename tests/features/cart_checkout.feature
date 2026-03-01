@@ -5,8 +5,8 @@ Feature: Cart and checkout validation
 
   @smoke @ui
   Scenario: Validate cart headers and item count
-    When the user selects a dynamic product from inventory
-    And the user adds selected dynamic product to cart
+    When the user selects a loaded product from inventory
+    And the user adds selected loaded product to cart
     And the user opens the cart page
     Then cart page title should be "Your Cart"
     And cart headers should be "QTY" and "Description"
@@ -22,19 +22,21 @@ Feature: Cart and checkout validation
     Then checkout info error should contain "Last Name is required"
     When the user fills first name, last name and continues checkout without entering postal code
     Then checkout info error should contain "Postal code is required"
-    When the user cancel checkout without continue
+    When the user cancels checkout without continue
     Then cart page should be displayed
-    When the user click continue shopping from cart page
-    Then products page should be displayed
+    When the user clicks continue shopping from cart page
+    Then the products page is displayed
 
   @regression @ui
   Scenario: Checkout overview payment shipping and totals validation
-    When the user selects two distinct dynamic products from inventory
-    And the user adds the first selected dynamic product to cart
-    And the user adds the second selected dynamic product to cart
+    When the user selects two distinct loaded products from inventory
+    And the user adds the first selected loaded product to cart
+    And the user adds the second selected loaded product to cart
     And the user starts checkout
     And the user fills checkout information with valid details
     And the user continues checkout
     Then checkout overview title should be "Checkout: Overview"
     And checkout overview should show payment shipping and total information
     And checkout overview financial totals should be correct
+    When the user clicks cancel from the overview page
+    Then the products page is displayed

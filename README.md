@@ -86,15 +86,6 @@ REMOTE=true
 SELENIUM_GRID_URL=http://localhost:4444/wd/hub
 ```
 
-For hybrid API checks:
-
-```env
-API_ENABLED=true
-API_BASE_URL=https://<your-backend-host>
-API_INVENTORY_ENDPOINT=/api/inventory
-API_CART_ENDPOINT=/api/cart
-```
-
 3. Execute tests:
 
 ```bash
@@ -166,4 +157,3 @@ allure serve reports/allure-results
   - Prefer `id` and `data-test` attributes.
   - Use scoped CSS selectors when stable test attributes are unavailable.
   - Use XPath only for text-based fallback paths.
-- API checks are optional by environment (`API_ENABLED=true`) so UI regression runs stay stable when backend endpoints are not exposed.

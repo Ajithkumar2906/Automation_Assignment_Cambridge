@@ -25,9 +25,49 @@ class DriverFactory:
     """Creates browser drivers for local and Selenium Grid execution."""
 
     @staticmethod
+    def _remote_executor_url() -> str:
+        if settings.browserstack_enabled:
+            if not settings.browserstack_username or not settings.browserstack_access_key:
+                raise RuntimeError(
+                    "BrowserStack is enabled but credentials are missing. "
+                    "Set BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY."
+                )
+            return (
+                f"https://{settings.browserstack_username}:{settings.browserstack_access_key}"
+                "@hub-cloud.browserstack.com/wd/hub"
+            )
+        return settings.selenium_grid_url
+
+    @staticmethod
+    def _apply_remote_capabilities(options, browser: str) -> None:
+        if not settings.browserstack_enabled:
+            return
+        bstack_options = {
+            "projectName": settings.browserstack_project_name,
+            "buildName": settings.browserstack_build_name,
+            "sessionName": f"smoke-{browser}",
+            "debug": settings.browserstack_debug,
+            "networkLogs": settings.browserstack_network_logs,
+        }
+        if settings.browserstack_os:
+            bstack_options["os"] = settings.browserstack_os
+        if settings.browserstack_os_version:
+            bstack_options["osVersion"] = settings.browserstack_os_version
+
+        options.set_capability("bstack:options", bstack_options)
+        options.set_capability("browserVersion", settings.browserstack_browser_version)
+
+    @staticmethod
     def create_driver(browser_name: str | None = None) -> WebDriver:
         browser = (browser_name or settings.browser).lower().strip()
-        logger.info("Creating driver. browser=%s remote=%s", browser, settings.remote)
+        use_remote = settings.remote or settings.browserstack_enabled
+        logger.info(
+            "Creating driver. browser=%s remote=%s browserstack=%s",
+            browser,
+            use_remote,
+            settings.browserstack_enabled,
+        )
+        remote_executor = DriverFactory._remote_executor_url()
 
         try:
             if browser == "chrome":
@@ -37,9 +77,10 @@ class DriverFactory:
                 options.add_argument("--disable-dev-shm-usage")
                 if settings.headless:
                     options.add_argument("--headless=new")
+                DriverFactory._apply_remote_capabilities(options, browser)
 
-                if settings.remote:
-                    return webdriver.Remote(command_executor=settings.selenium_grid_url, options=options)
+                if use_remote:
+                    return webdriver.Remote(command_executor=remote_executor, options=options)
 
                 try:
                     return webdriver.Chrome(options=options)
@@ -53,9 +94,10 @@ class DriverFactory:
                 options.add_argument(f"--height={settings.window_height}")
                 if settings.headless:
                     options.add_argument("-headless")
+                DriverFactory._apply_remote_capabilities(options, browser)
 
-                if settings.remote:
-                    return webdriver.Remote(command_executor=settings.selenium_grid_url, options=options)
+                if use_remote:
+                    return webdriver.Remote(command_executor=remote_executor, options=options)
 
                 try:
                     return webdriver.Firefox(options=options)
@@ -68,9 +110,10 @@ class DriverFactory:
                 options.add_argument(f"--window-size={settings.window_width},{settings.window_height}")
                 if settings.headless:
                     options.add_argument("--headless=new")
+                DriverFactory._apply_remote_capabilities(options, browser)
 
-                if settings.remote:
-                    return webdriver.Remote(command_executor=settings.selenium_grid_url, options=options)
+                if use_remote:
+                    return webdriver.Remote(command_executor=remote_executor, options=options)
 
                 try:
                     return webdriver.Edge(options=options)
@@ -82,8 +125,9 @@ class DriverFactory:
                 if settings.headless:
                     logger.warning("Headless mode is not supported for Safari; running headed.")
                 options = SafariOptions()
-                if settings.remote:
-                    return webdriver.Remote(command_executor=settings.selenium_grid_url, options=options)
+                DriverFactory._apply_remote_capabilities(options, browser)
+                if use_remote:
+                    return webdriver.Remote(command_executor=remote_executor, options=options)
                 return webdriver.Safari(options=options)
         except Exception as exc:
             raise RuntimeError(f"Failed to initialize browser '{browser}': {exc}") from exc
