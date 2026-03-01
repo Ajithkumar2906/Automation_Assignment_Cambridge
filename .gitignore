@@ -4,9 +4,8 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
-reports/allure-results/
-reports/allure-report/
-reports/html/
+reports/*
+!reports/.gitkeep
 logs/
 .env
 .DS_Store
