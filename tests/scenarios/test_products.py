@@ -17,16 +17,30 @@ def test_open_product_details_and_back():
 
 
 @scenario("../features/products.feature", "Validate product sorting for all 4 options")
-def test_validate_product_sorting_for_all_4_options():
+def test_sorting_all_options():
+    pass
+
+
+@scenario("../features/products.feature", "Validate sorting with API comparison")
+def test_sorting_matches_api():
+    pass
+
+
+@scenario("../features/products.feature", "Sidemenu close and Logout from page")
+def test_sidemenu_close_and_logout_from_page():
     pass
 
 
 @scenario("../features/products.feature", "Reset app state clears cart badge")
-def test_reset_app_state_clears_cart_badge():
+def test_reset_clears_cart_badge():
     pass
 
 
-@scenario("../features/products.feature", "Validate dynamic product details from inventory to details and cart")
-def test_validate_dynamic_product_details_from_inventory_to_details_and_cart():
+@scenario("../features/products.feature", "Validate loaded product details from inventory to details and cart")
+def test_loaded_product_details_flow():
     pass
 
+
+@scenario("../features/products.feature", "Validate loaded cart state between UI and API")
+def test_loaded_cart_matches_api():
+    pass

@@ -32,8 +32,16 @@ class Settings:
     api_inventory_endpoint: str = os.getenv(
         "API_INVENTORY_ENDPOINT", "/api/inventory")
     api_cart_endpoint: str = os.getenv("API_CART_ENDPOINT", "/api/cart")
-    api_latest_order_endpoint: str = os.getenv(
-        "API_LATEST_ORDER_ENDPOINT", "/api/orders/latest")
+    browserstack_enabled: bool = os.getenv("BROWSERSTACK_ENABLED", "false").lower() == "true"
+    browserstack_username: str = os.getenv("BROWSERSTACK_USERNAME", "")
+    browserstack_access_key: str = os.getenv("BROWSERSTACK_ACCESS_KEY", "")
+    browserstack_project_name: str = os.getenv("BROWSERSTACK_PROJECT_NAME", "Automation_Assignment_Cambridge")
+    browserstack_build_name: str = os.getenv("BROWSERSTACK_BUILD_NAME", "Local Build")
+    browserstack_os: str = os.getenv("BROWSERSTACK_OS", "")
+    browserstack_os_version: str = os.getenv("BROWSERSTACK_OS_VERSION", "")
+    browserstack_browser_version: str = os.getenv("BROWSERSTACK_BROWSER_VERSION", "latest")
+    browserstack_debug: bool = os.getenv("BROWSERSTACK_DEBUG", "true").lower() == "true"
+    browserstack_network_logs: bool = os.getenv("BROWSERSTACK_NETWORK_LOGS", "false").lower() == "true"
 
 
 settings = Settings()

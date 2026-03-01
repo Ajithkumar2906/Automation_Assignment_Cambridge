@@ -54,6 +54,3 @@ class SauceApiClient:
 
     def get_cart(self) -> tuple[int, dict | list]:
         return self.get_json(settings.api_cart_endpoint)
-
-    def get_latest_order(self) -> tuple[int, dict | list]:
-        return self.get_json(settings.api_latest_order_endpoint)

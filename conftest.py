@@ -21,7 +21,7 @@ from framework.pages.inventory_page import InventoryPage
 from framework.pages.login_page import LoginPage
 from framework.pages.product_details_page import ProductDetailsPage
 
-pytest_plugins = ["tests.steps.ui_steps", "tests.steps.api_steps"]
+pytest_plugins = ["tests.steps.ui_steps"]
 
 
 def pytest_addoption(parser):
@@ -87,7 +87,8 @@ def driver(browser_name: str) -> WebDriver:
 
 @pytest.fixture(scope="function")
 def browser_name(request) -> str:
-    return _normalized_browsers(request.config)[0]
+    # Use parametrized browser value when available; fallback keeps direct fixture use safe.
+    return getattr(request, "param", _normalized_browsers(request.config)[0])
 
 
 @pytest.fixture(scope="function")
@@ -156,32 +157,9 @@ def pytest_runtest_makereport(item: Item, call):
     setattr(item, f"rep_{report.when}", report)
 
 
-def pytest_collection_modifyitems(items: list[Item]) -> None:
-    """Force execution order for UI interview flow."""
-    # In xdist runs, keep natural scheduling for better parallel balancing.
-    if items and items[0].config.getoption("numprocesses", default=0):
-        return
-
-    file_order = {
-        "test_login.py": 1,
-        "test_products.py": 2,
-        "test_cart_checkout.py": 3,
-        "test_e2e.py": 4,
-        "test_api.py": 5,
-    }
-
-    def order_key(item: Item) -> tuple[int, int, str]:
-        filename = Path(str(item.fspath)).name
-        rank = file_order.get(filename, 99)
-        line = item.location[1] if item.location else 0
-        return rank, line, item.name
-
-    items.sort(key=order_key)
-
-
 @pytest.fixture(autouse=True)
 def _capture_screenshot_on_failure(request):
-    """Capture screenshots for failed UI tests to help interview debugging discussion."""
+    """Capture screenshots for failed UI tests to help debugging."""
     yield
     if request.node.rep_call.failed and "ui" in request.node.keywords:
         driver: WebDriver | None = request.node.funcargs.get("driver")

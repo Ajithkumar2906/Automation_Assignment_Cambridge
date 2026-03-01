@@ -23,5 +23,46 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run API smoke
+      - name: Run API checks
         run: pytest -m api
+
+      - name: Run UI smoke (chrome headless)
+        env:
+          HEADLESS: "true"
+        run: pytest -m "smoke and ui" --browser chrome
+
+  browserstack-smoke:
+    if: ${{ secrets.BROWSERSTACK_USERNAME != '' && secrets.BROWSERSTACK_ACCESS_KEY != '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chrome, firefox, edge]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run BrowserStack smoke
+        env:
+          HEADLESS: "false"
+          REMOTE: "true"
+          BROWSERSTACK_ENABLED: "true"
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          BROWSERSTACK_PROJECT_NAME: "Automation_Assignment_Cambridge"
+          BROWSERSTACK_BUILD_NAME: "GitHub-${{ github.run_number }}"
+          BROWSERSTACK_BROWSER_VERSION: "latest"
+          BROWSERSTACK_DEBUG: "true"
+          BROWSERSTACK_NETWORK_LOGS: "true"
+        run: pytest -m "smoke and ui" --browser ${{ matrix.browser }} -q

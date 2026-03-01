@@ -9,6 +9,7 @@ A robust, scalable UI automation framework for [SauceDemo](https://www.saucedemo
 - `POM` (Page Object Model)
 - `pytest-html` and `Allure` reporting
 - Local and Selenium Grid execution (Docker)
+- BrowserStack cloud execution for cross-browser CI/CD
 
 ## Project Structure
 
@@ -92,7 +93,6 @@ API_ENABLED=true
 API_BASE_URL=https://<your-backend-host>
 API_INVENTORY_ENDPOINT=/api/inventory
 API_CART_ENDPOINT=/api/cart
-API_LATEST_ORDER_ENDPOINT=/api/orders/latest
 ```
 
 3. Execute tests:
@@ -100,6 +100,34 @@ API_LATEST_ORDER_ENDPOINT=/api/orders/latest
 ```bash
 pytest -m ui
 ```
+
+## Run With BrowserStack
+
+1. Set in `.env`:
+
+```env
+BROWSERSTACK_ENABLED=true
+REMOTE=true
+BROWSERSTACK_USERNAME=<your-browserstack-username>
+BROWSERSTACK_ACCESS_KEY=<your-browserstack-access-key>
+BROWSERSTACK_PROJECT_NAME=Automation_Assignment_Cambridge
+BROWSERSTACK_BUILD_NAME=Local Build
+BROWSERSTACK_BROWSER_VERSION=latest
+```
+
+2. Execute smoke suite on BrowserStack:
+
+```bash
+pytest -m "smoke and ui" --browser chrome
+pytest -m "smoke and ui" --browser firefox
+pytest -m "smoke and ui" --browser edge
+```
+
+3. For GitHub Actions, add repository secrets:
+- `BROWSERSTACK_USERNAME`
+- `BROWSERSTACK_ACCESS_KEY`
+
+Then the `browserstack-smoke` job runs automatically on push/PR.
 
 ## Reports
 
@@ -117,8 +145,10 @@ allure serve reports/allure-results
 
 - Commit frequently with meaningful messages.
 - Protect `main` branch.
-- Add interviewers as `Developer` access.
-- Configure CI job to run smoke suite on each push.
+- Add project collaborators as `Developer` access.
+- Run `@smoke` on each push/merge request.
+- Run full `@regression` suite on a schedule (for example nightly).
+- Keep BrowserStack CI matrix focused to representative coverage (for example Chrome/Firefox/Edge latest).
 
 ## Coverage Included
 
@@ -127,5 +157,13 @@ allure serve reports/allure-results
 - Add/Remove cart flows.
 - Cart page and checkout info validations.
 - Checkout overview and finish flow.
-- Dynamic product flows (inventory -> details -> cart -> checkout overview).
-- Hybrid UI + API validation for sorting, cart state, and post-checkout order checks.
+- Loaded product flows (inventory -> details -> cart -> checkout overview).
+- Hybrid UI + API validation for sorting and cart state.
+
+## Test Design Notes
+
+- Selector strategy:
+  - Prefer `id` and `data-test` attributes.
+  - Use scoped CSS selectors when stable test attributes are unavailable.
+  - Use XPath only for text-based fallback paths.
+- API checks are optional by environment (`API_ENABLED=true`) so UI regression runs stay stable when backend endpoints are not exposed.
