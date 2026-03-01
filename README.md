@@ -8,6 +8,7 @@ A robust, scalable UI automation framework for [SauceDemo](https://www.saucedemo
 - `Selenium WebDriver`
 - `POM` (Page Object Model)
 - `pytest-html` and `Allure` reporting
+- lightweight API availability check for login page
 - Local and Selenium Grid execution (Docker)
 - BrowserStack cloud execution for cross-browser CI/CD
 
@@ -51,14 +52,23 @@ cp .env.example .env
 ```bash
 pytest -m smoke --browser chrome
 pytest -m regression --browser firefox
-pytest -m "ui and not api" --browser edge
+pytest -m ui --browser edge
 pytest -m e2e --browser chrome
+pytest -m api
 ```
 
-Run multiple browsers in one command:
+Run full suite in a single browser:
 
 ```bash
-pytest -m ui --browser chrome --browser firefox
+pytest --browser chrome
+```
+
+Run full suite across local browsers (run separately for each browser):
+
+```bash
+pytest --browser chrome
+pytest --browser firefox
+pytest --browser edge
 ```
 
 Parallel execution (xdist):
@@ -104,6 +114,10 @@ BROWSERSTACK_ACCESS_KEY=<your-browserstack-access-key>
 BROWSERSTACK_PROJECT_NAME=Automation_Assignment_Cambridge
 BROWSERSTACK_BUILD_NAME=Local Build
 BROWSERSTACK_BROWSER_VERSION=latest
+BROWSERSTACK_OS=
+BROWSERSTACK_OS_VERSION=
+BROWSERSTACK_DEBUG=true
+BROWSERSTACK_NETWORK_LOGS=false
 ```
 
 2. Execute smoke suite on BrowserStack:
@@ -143,13 +157,20 @@ allure serve reports/allure-results
 
 ## Coverage Included
 
+- API: login page reachability/status + content smoke check.
 - Login positive and negative paths.
 - Product listing validations and sort checks.
 - Add/Remove cart flows.
 - Cart page and checkout info validations.
 - Checkout overview and finish flow.
-- Loaded product flows (inventory -> details -> cart -> checkout overview).
-- Hybrid UI + API validation for sorting and cart state.
+- Loaded product flow: inventory -> details -> cart -> checkout overview.
+- Product details data consistency against inventory: image, name, description, and price.
+- Financial assertions in checkout overview:
+  - `Item total = sum(price * quantity)`
+  - `Total = Item total + Tax`
+- E2E scalability behavior:
+  - Selects up to two products.
+  - If only one product is available, flow continues with one product.
 
 ## Test Design Notes
 
@@ -157,3 +178,4 @@ allure serve reports/allure-results
   - Prefer `id` and `data-test` attributes.
   - Use scoped CSS selectors when stable test attributes are unavailable.
   - Use XPath only for text-based fallback paths.
+- For known SauceDemo input instability in checkout/login edge cases, JS-assisted value setting is used in selected steps to reduce flakiness.
