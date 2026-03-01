@@ -30,7 +30,7 @@ class Settings:
     browserstack_enabled: bool = os.getenv("BROWSERSTACK_ENABLED", "false").lower() == "true"
     browserstack_username: str = os.getenv("BROWSERSTACK_USERNAME", "")
     browserstack_access_key: str = os.getenv("BROWSERSTACK_ACCESS_KEY", "")
-    browserstack_project_name: str = os.getenv("BROWSERSTACK_PROJECT_NAME", "Automation_Assignment_Cambridge")
+    browserstack_project_name: str = os.getenv("BROWSERSTACK_PROJECT_NAME", "UI_Automation_Framework")
     browserstack_build_name: str = os.getenv("BROWSERSTACK_BUILD_NAME", "Local Build")
     browserstack_os: str = os.getenv("BROWSERSTACK_OS", "")
     browserstack_os_version: str = os.getenv("BROWSERSTACK_OS_VERSION", "")

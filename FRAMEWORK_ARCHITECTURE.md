@@ -1,4 +1,5 @@
 # Framework Architecture
+This document describes structural and execution design of the framework.
 
 ## Purpose
 This framework automates SauceDemo UI flows with maintainable, reusable, and scalable design using Python, pytest, pytest-bdd, Selenium WebDriver, and POM.

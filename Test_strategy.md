@@ -1,4 +1,5 @@
 # Test Strategy
+This document focuses on test design decisions and coverage rationale.
 
 ## Objective
 - Validate critical user journeys on SauceDemo with reliable, maintainable automation.

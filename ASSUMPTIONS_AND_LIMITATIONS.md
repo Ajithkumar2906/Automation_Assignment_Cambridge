@@ -1,4 +1,5 @@
 # Assumptions and Limitations
+This document outlines environmental constraints and intentional scope boundaries.
 
 ## Assumptions
 - AUT is `https://www.saucedemo.com/` and test users remain available (for example `standard_user`, `locked_out_user`, and other SauceDemo sample accounts).

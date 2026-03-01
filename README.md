@@ -1,4 +1,4 @@
-# Automation_Assignment_Cambridge
+# UI Test Automation Framework
 
 A robust, scalable UI automation framework for [SauceDemo](https://www.saucedemo.com/) using:
 
@@ -15,7 +15,7 @@ A robust, scalable UI automation framework for [SauceDemo](https://www.saucedemo
 ## Project Structure
 
 ```text
-Automation_Assignment_Cambridge/
+project-root/
 ├── framework/
 │   ├── api/                # API validations used alongside UI tests
 │   ├── core/               # Config, driver factory, logging
@@ -111,7 +111,7 @@ BROWSERSTACK_ENABLED=true
 REMOTE=true
 BROWSERSTACK_USERNAME=<your-browserstack-username>
 BROWSERSTACK_ACCESS_KEY=<your-browserstack-access-key>
-BROWSERSTACK_PROJECT_NAME=Automation_Assignment_Cambridge
+BROWSERSTACK_PROJECT_NAME=UI_Automation_Framework
 BROWSERSTACK_BUILD_NAME=Local Build
 BROWSERSTACK_BROWSER_VERSION=latest
 BROWSERSTACK_OS=
@@ -171,6 +171,21 @@ allure serve reports/allure-results
 - E2E scalability behavior:
   - Selects up to two products.
   - If only one product is available, flow continues with one product.
+
+## Requirement Traceability Matrix
+
+|  Requirement  | Feature File | Representative Scenarios Covered |
+| --- | --- | --- |
+| Login page validation (positive/negative/error handling) | `tests/features/login.feature` | valid login, invalid credentials, empty fields, locked-out user, error message close, header checks |
+| Product/inventory checks after login | `tests/features/products.feature` | inventory components visibility, product card data checks, add/remove cart, sort options and order checks |
+| Product details and navigation behavior | `tests/features/products.feature` | open details page, data consistency (image/name/description/price), add/remove from details, back to products |
+| Cart page validations | `tests/features/cart_checkout.feature` | cart header/columns, quantity-description checks, remove, continue shopping, checkout navigation |
+| Checkout information page validations | `tests/features/cart_checkout.feature` | valid entry flow, mandatory field validation errors, cancel/continue behavior |
+| Checkout overview and completion | `tests/features/cart_checkout.feature`, `tests/features/e2e.feature` | payment/shipping checks, item total and grand total assertions, finish flow, thank-you and back-home checks |
+| End-to-end user journey | `tests/features/e2e.feature` | login -> add products -> cart -> checkout -> finish, adaptive product selection for resilience |
+| API smoke validation (running checks only) | `tests/features/api.feature` | login page availability/status and content smoke validation |
+| Cross-browser/parallel execution capability | `conftest.py`, `framework/core/driver_factory.py` | local Chrome/Firefox/Edge/Safari runs, Selenium Grid remote runs, BrowserStack smoke matrix, xdist parallel support |
+| Reporting, evidence, and diagnostics | `conftest.py`, `pytest.ini` | screenshot-on-failure, pytest-html reports, Allure raw results, step-level execution logs |
 
 ## Test Design Notes
 
