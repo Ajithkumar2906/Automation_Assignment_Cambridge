@@ -26,18 +26,14 @@ class CheckoutInfoPage(BasePage):
             self.type(self.FIRST_NAME, first_name)
             self.type(self.LAST_NAME, last_name)
             self.type(self.POSTAL_CODE, postal_code)
-            first = self.wait.visible(self.FIRST_NAME).get_attribute("value").strip()
-            last = self.wait.visible(self.LAST_NAME).get_attribute("value").strip()
-            zip_code = self.wait.visible(self.POSTAL_CODE).get_attribute("value").strip()
-            if first and last and zip_code:
-                return
-            # Fallback: set values via JS and dispatch input events.
+            # Always sync with JS setter to keep React-controlled state consistent.
             self.driver.execute_script(
                 """
                 const setValue = (id, value) => {
                   const el = document.getElementById(id);
                   if (!el) return;
-                  el.value = value;
+                  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                  setter.call(el, value);
                   el.dispatchEvent(new Event('input', { bubbles: true }));
                   el.dispatchEvent(new Event('change', { bubbles: true }));
                 };
@@ -52,7 +48,7 @@ class CheckoutInfoPage(BasePage):
             first = self.wait.visible(self.FIRST_NAME).get_attribute("value").strip()
             last = self.wait.visible(self.LAST_NAME).get_attribute("value").strip()
             zip_code = self.wait.visible(self.POSTAL_CODE).get_attribute("value").strip()
-            if first and last and zip_code:
+            if first == first_name.strip() and last == last_name.strip() and zip_code == postal_code.strip():
                 return
         raise AssertionError("Failed to populate checkout information fields reliably")
 

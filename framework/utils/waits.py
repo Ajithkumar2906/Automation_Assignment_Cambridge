@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
@@ -33,5 +32,5 @@ class WaitUtils:
     def try_visible(self, locator: tuple[str, str]) -> WebElement | None:
         try:
             return self.visible(locator)
-        except TimeoutException:
+        except (TimeoutException, WebDriverException):
             return None

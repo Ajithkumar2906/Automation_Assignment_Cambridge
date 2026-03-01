@@ -3,7 +3,7 @@ Feature: API and page availability checks
   I want lightweight API validation
   So that test failures can be triaged faster
 
-  @api
+  @regression @api
   Scenario: Login page is reachable
     Given an API client for SauceDemo
     When the API client requests the login page
