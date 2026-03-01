@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
@@ -110,10 +112,19 @@ class DriverFactory:
                 options.add_argument(f"--window-size={settings.window_width},{settings.window_height}")
                 if settings.headless:
                     options.add_argument("--headless=new")
+                edge_binary = Path(settings.edge_binary_path)
+                if edge_binary.exists():
+                    options.binary_location = str(edge_binary)
                 DriverFactory._apply_remote_capabilities(options, browser)
 
                 if use_remote:
                     return webdriver.Remote(command_executor=remote_executor, options=options)
+
+                # Fallback for environments where azureedge host resolution is blocked.
+                edge_driver = Path(settings.edge_driver_path)
+                if edge_driver.exists():
+                    service = EdgeService(executable_path=str(edge_driver))
+                    return webdriver.Edge(service=service, options=options)
 
                 try:
                     return webdriver.Edge(options=options)

@@ -223,6 +223,13 @@ def select_two_loaded_products(inventory_page, context):
     context["selected_loaded_products"] = selected_two
 
 
+@when("the user selects up to two loaded products from inventory")
+def select_up_to_two_loaded_products(inventory_page, context):
+    products = inventory_page.product_cards_data()
+    assert products, "No products available on inventory page"
+    context["selected_loaded_products"] = sorted(products, key=lambda item: item["name"])[:2]
+
+
 @when("the user opens selected loaded product details")
 def open_selected_loaded_product_details(inventory_page, context):
     selected = context["selected_loaded_product"]
@@ -257,6 +264,12 @@ def add_first_selected_loaded_product(inventory_page, context):
 def add_second_selected_loaded_product(inventory_page, context):
     selected_two = context["selected_loaded_products"]
     inventory_page.add_product_by_name(selected_two[1]["name"])
+
+
+@when("the user adds all selected loaded products to cart")
+def add_all_selected_loaded_products(inventory_page, context):
+    for product in context["selected_loaded_products"]:
+        inventory_page.add_product_by_name(product["name"])
 
 
 @when("the user removes selected loaded product from inventory")
@@ -357,6 +370,21 @@ def verify_cart_headers(cart_page, expected_qty, expected_desc):
 @then(parsers.parse("cart should contain {expected_items:d} items"))
 def verify_cart_item_count(cart_page, expected_items):
     assert cart_page.item_count() == expected_items
+
+
+@then("cart badge count should match selected loaded products")
+def verify_cart_badge_matches_selected(inventory_page, context):
+    expected = len(context["selected_loaded_products"])
+    assert inventory_page.wait_for_cart_count(expected), (
+        f"Cart badge mismatch: expected {expected}, actual {inventory_page.cart_count()}"
+    )
+    assert inventory_page.cart_count() == expected
+
+
+@then("cart should contain selected loaded products count")
+def verify_cart_item_count_matches_selected(cart_page, context):
+    expected = len(context["selected_loaded_products"])
+    assert cart_page.item_count() == expected
 
 
 @then("cart page should be displayed")

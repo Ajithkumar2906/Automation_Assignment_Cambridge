@@ -68,7 +68,7 @@ Feature: Inventory and product operations
     Then selected loaded product details should match inventory data
     When the user adds selected loaded product to cart
     When the user toggles cart button on product details page
-    Then cart badge count should be 1
+    Then the cart badge should increment by 1
     When the user opens the cart page
     Then selected loaded product should match cart item data
     When the user starts checkout

@@ -37,6 +37,11 @@ class Settings:
     browserstack_browser_version: str = os.getenv("BROWSERSTACK_BROWSER_VERSION", "latest")
     browserstack_debug: bool = os.getenv("BROWSERSTACK_DEBUG", "true").lower() == "true"
     browserstack_network_logs: bool = os.getenv("BROWSERSTACK_NETWORK_LOGS", "false").lower() == "true"
+    edge_driver_path: str = os.getenv("EDGE_DRIVER_PATH", "tools/edgedriver/msedgedriver")
+    edge_binary_path: str = os.getenv(
+        "EDGE_BINARY_PATH",
+        "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+    )
 
 
 settings = Settings()

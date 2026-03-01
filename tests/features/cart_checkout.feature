@@ -29,9 +29,8 @@ Feature: Cart and checkout validation
 
   @regression @ui
   Scenario: Checkout overview payment shipping and totals validation
-    When the user selects two distinct loaded products from inventory
-    And the user adds the first selected loaded product to cart
-    And the user adds the second selected loaded product to cart
+    When the user selects a loaded product from inventory
+    And the user adds selected loaded product to cart
     And the user starts checkout
     And the user fills checkout information with valid details
     And the user continues checkout

@@ -27,6 +27,9 @@ class ProductDetailsPage(BasePage):
     def has_image(self) -> bool:
         return self.is_visible(self.IMAGE)
 
+    def image_src(self) -> str:
+        return self.wait.visible(self.IMAGE).get_attribute("src") or ""
+
     def toggle_cart_button(self) -> None:
         self.click(self.ADD_OR_REMOVE)
 
