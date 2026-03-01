@@ -21,7 +21,7 @@ from framework.pages.inventory_page import InventoryPage
 from framework.pages.login_page import LoginPage
 from framework.pages.product_details_page import ProductDetailsPage
 
-pytest_plugins = ["tests.steps.ui_steps"]
+pytest_plugins = ["tests.steps.ui_steps", "tests.steps.api_steps"]
 
 
 def pytest_addoption(parser):
